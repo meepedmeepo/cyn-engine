@@ -64,3 +64,25 @@ impl TexVertex {
         }
     }
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct Instance {
+    position: cgmath::Vector3<f32>,
+    rotation: cgmath::Quaternion<f32>,
+}
+
+impl Instance {
+    pub fn to_raw(&self) -> RawInstance {
+        RawInstance {
+            model: (cgmath::Matrix4::from_translation(self.position)
+                * cgmath::Matrix4::from(self.rotation))
+            .into(),
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone, Pod, Zeroable)]
+pub struct RawInstance {
+    model: [[f32; 4]; 4],
+}

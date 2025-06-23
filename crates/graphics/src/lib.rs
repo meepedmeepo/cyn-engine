@@ -9,14 +9,14 @@ use winit::{
     window::Window,
 };
 
-mod buffers;
 mod context;
+mod geometry;
 mod renderer;
+mod spritesheet;
 mod structs;
 mod texture;
-pub use buffers::*;
-
-use structs::Vertex;
+pub use geometry::*;
+pub use structs::*;
 
 use crate::{structs::TexVertex, texture::Texture};
 
