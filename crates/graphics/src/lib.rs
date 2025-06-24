@@ -9,16 +9,24 @@ use winit::{
     window::Window,
 };
 
+mod camera;
 mod context;
 mod geometry;
+mod pipeline;
 mod renderer;
 mod spritesheet;
 mod structs;
 mod texture;
+
+pub mod utils;
 pub use geometry::*;
 pub use structs::*;
 
-use crate::{structs::TexVertex, texture::Texture};
+use crate::{
+    camera::{Camera, CameraResource},
+    structs::TexVertex,
+    texture::Texture,
+};
 
 pub struct State {
     surface: wgpu::Surface<'static>,
@@ -32,6 +40,7 @@ pub struct State {
     num_indices: u32,
     diffuse_bindgroup: wgpu::BindGroup,
     diffuse_texture: Texture,
+    camera_resource: CameraResource,
     window: Arc<Window>,
 }
 
@@ -110,6 +119,9 @@ impl State {
                 label: Some("texture_bindgroup_layout"),
             });
 
+        let camera_resource =
+            CameraResource::new(&device, (size.width as f32, size.height as f32), "Main");
+
         let diffuse_bindgroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &texture_bindgroup_layout,
             entries: &[
@@ -131,7 +143,10 @@ impl State {
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&texture_bindgroup_layout],
+                bind_group_layouts: &[
+                    &texture_bindgroup_layout,
+                    &camera_resource.camera_bind_group_layout,
+                ],
                 push_constant_ranges: &[],
             });
 
@@ -174,7 +189,8 @@ impl State {
         });
 
         let mut quad = Quad::new();
-        quad.scale_quad(0.8);
+        quad.scale_quad(0.5);
+        quad.translate((0.3, 0.3, 0.).into());
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
@@ -203,6 +219,7 @@ impl State {
             diffuse_bindgroup,
             diffuse_texture,
             index_buffer,
+            camera_resource,
         })
     }
 
@@ -262,7 +279,10 @@ impl State {
         });
 
         render_pass.set_pipeline(&self.render_pipeline);
+
         render_pass.set_bind_group(0, &self.diffuse_bindgroup, &[]);
+        render_pass.set_bind_group(1, &self.camera_resource.camera_bind_group, &[]);
+
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
         render_pass.draw_indexed(0..self.num_indices, 0, 0..1);

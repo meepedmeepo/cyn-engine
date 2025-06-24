@@ -28,13 +28,21 @@ impl Quad {
 
     //Evenly scales the size of quad.
     pub fn scale_quad(&mut self, scale: f32) {
-        if scale >= 1. || scale <= 0. {
-            panic!("Quad scale must be greater than 0, but lower than 1");
+        if scale <= 0. {
+            panic!("Quad scale must be greater than 0");
         }
 
         for v in self.vertices.iter_mut() {
             v.position[0] *= scale;
             v.position[1] *= scale;
+        }
+    }
+
+    pub fn translate(&mut self, translation: Vector3<f32>) {
+        for tex in self.vertices.iter_mut() {
+            tex.position[0] += translation.x;
+            tex.position[1] += translation.y;
+            tex.position[2] += translation.z;
         }
     }
 }
