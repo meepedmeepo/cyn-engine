@@ -37,7 +37,7 @@ impl Camera {
         }
     }
 
-    ///Currently uses perspective but need to change to Orthographic camera.
+    ///todo: need to make zoom adjustable.
     pub fn build_view_projection_matrix(&self) -> cgmath::Matrix4<f32> {
         let view = cgmath::Matrix4::look_at_rh(self.eye, self.focus, self.up_dir);
 

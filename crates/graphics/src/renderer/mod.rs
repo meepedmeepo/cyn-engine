@@ -1,10 +1,9 @@
-use crate::{camera::Camera, structs::TexVertex};
+use crate::{camera::CameraResource, structs::TexVertex};
 
 pub struct Renderer2D {
     sprite_pass: SpritePass,
-    map_pass: TileMapPass,
-    camera: Camera,
-    camera_uniform_buffer: wgpu::Buffer,
+    //map_pass: TileMapPass,
+    camera: CameraResource,
 }
 
 pub struct SpritePass {
