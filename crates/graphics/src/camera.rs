@@ -12,6 +12,7 @@ pub struct Camera {
     fov: f32,
     z_near: f32,
     z_far: f32,
+    zoom: f32,
 }
 
 impl Camera {
@@ -32,6 +33,7 @@ impl Camera {
             fov,
             z_near,
             z_far,
+            zoom: 2.5,
         }
     }
 
@@ -39,10 +41,20 @@ impl Camera {
     pub fn build_view_projection_matrix(&self) -> cgmath::Matrix4<f32> {
         let view = cgmath::Matrix4::look_at_rh(self.eye, self.focus, self.up_dir);
 
-        let projection =
-            cgmath::perspective(cgmath::Deg(self.fov), self.aspect, self.z_near, self.z_far);
+        //let projection =
+        //    cgmath::perspective(cgmath::Deg(self.fov), self.aspect, self.z_near, self.z_far);
 
-        OPENGL_TO_WGPU_MATRIX * projection * view
+        let width = self.zoom;
+        let height = width / self.aspect;
+
+        let left = width * -0.5;
+        let right = width * 0.5;
+        let bottom = height * -0.5;
+        let top = height * 0.5;
+
+        let proj = cgmath::ortho(left, right, bottom, top, self.z_near, self.z_far);
+
+        OPENGL_TO_WGPU_MATRIX * proj * view
     }
 }
 
