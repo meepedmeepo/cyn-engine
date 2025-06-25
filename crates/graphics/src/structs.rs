@@ -1,6 +1,7 @@
 use std::f32;
 
 use bytemuck::{Pod, Zeroable};
+use wgpu::{VertexFormat, VertexStepMode};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
@@ -67,8 +68,8 @@ impl TexVertex {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Instance {
-    position: cgmath::Vector3<f32>,
-    rotation: cgmath::Quaternion<f32>,
+    pub position: cgmath::Vector3<f32>,
+    pub rotation: cgmath::Quaternion<f32>,
 }
 
 impl Instance {
@@ -85,4 +86,41 @@ impl Instance {
 #[derive(Debug, Copy, Clone, Pod, Zeroable)]
 pub struct RawInstance {
     model: [[f32; 4]; 4],
+}
+
+impl RawInstance {
+    pub fn buffer_layout() -> wgpu::VertexBufferLayout<'static> {
+        wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<RawInstance>() as wgpu::BufferAddress,
+            step_mode: VertexStepMode::Instance,
+            attributes: &[
+                //Have to declare a vertex slot for each vec4 in the matrix.
+                // This will be reassembled into mat4x4 in the shader.
+                wgpu::VertexAttribute {
+                    offset: 0,
+                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
+                    shader_location: 5,
+                    format: VertexFormat::Float32x4,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
+                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
+                    shader_location: 6,
+                    format: VertexFormat::Float32x4,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 8]>() as wgpu::BufferAddress,
+                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
+                    shader_location: 7,
+                    format: VertexFormat::Float32x4,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 12]>() as wgpu::BufferAddress,
+                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
+                    shader_location: 8,
+                    format: VertexFormat::Float32x4,
+                },
+            ],
+        }
+    }
 }

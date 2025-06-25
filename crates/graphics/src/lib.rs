@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use wgpu::{IndexFormat, RenderPass, hal::vulkan::Adapter, util::DeviceExt};
+use cgmath::Rotation3;
+use wgpu::{
+    IndexFormat, RenderPass,
+    hal::vulkan::Adapter,
+    util::{BufferInitDescriptor, DeviceExt},
+};
 use winit::{
     application::ApplicationHandler,
     event::{Event, KeyEvent, WindowEvent},
@@ -41,6 +46,8 @@ pub struct State {
     diffuse_bindgroup: wgpu::BindGroup,
     diffuse_texture: Texture,
     camera_resource: CameraResource,
+    instances: Vec<Instance>,
+    instance_buffer: wgpu::Buffer,
     window: Arc<Window>,
 }
 
@@ -122,6 +129,33 @@ impl State {
         let camera_resource =
             CameraResource::new(&device, (size.width as f32, size.height as f32), "Main");
 
+        let instance_displacement = cgmath::Vector3::new(10. * 0.5, 10. * 0.5, 0.0);
+
+        let instances = (0..10)
+            .flat_map(|y| {
+                (0..10).map(move |x| {
+                    let position = cgmath::Vector3 {
+                        x: x as f32,
+                        y: y as f32,
+                        z: 0.,
+                    } - instance_displacement;
+                    let rotation = cgmath::Quaternion::from_axis_angle(
+                        cgmath::Vector3::unit_z(),
+                        cgmath::Deg(0.0),
+                    );
+
+                    Instance { position, rotation }
+                })
+            })
+            .collect::<Vec<_>>();
+
+        let instance_raw = instances.iter().map(Instance::to_raw).collect::<Vec<_>>();
+        let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Instance Buffer"),
+            contents: bytemuck::cast_slice(&instance_raw),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+
         let diffuse_bindgroup = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &texture_bindgroup_layout,
             entries: &[
@@ -156,7 +190,7 @@ impl State {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[TexVertex::desc()],
+                buffers: &[TexVertex::desc(), RawInstance::buffer_layout()],
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -189,8 +223,8 @@ impl State {
         });
 
         let mut quad = Quad::new();
-        quad.scale_quad(0.5);
-        quad.translate((0.3, 0.3, 0.).into());
+        quad.scale_quad(0.3);
+        //quad.translate((0.3, 0.3, 0.).into());
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
@@ -220,6 +254,8 @@ impl State {
             diffuse_texture,
             index_buffer,
             camera_resource,
+            instances,
+            instance_buffer,
         })
     }
 
@@ -284,8 +320,10 @@ impl State {
         render_pass.set_bind_group(1, &self.camera_resource.camera_bind_group, &[]);
 
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+        render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
+
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+        render_pass.draw_indexed(0..self.num_indices, 0, 0..self.instances.len() as _);
 
         std::mem::drop(render_pass);
 
