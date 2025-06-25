@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.98"
+bevy_ecs = "0.16.1"
 bytemuck = "1.23.1"
 cgmath = "0.18.0"
 env_logger = "0.11.8"
@@ -13,3 +14,4 @@ log = "0.4.27"
 pollster = "0.4.0"
 wgpu = "25.0.2"
 winit = "0.30.11"
+common = { path = "../common", version = "*" }

@@ -16,6 +16,7 @@ use winit::{
 
 mod camera;
 mod context;
+mod data_pipeline;
 mod geometry;
 mod pipeline;
 mod renderer;
