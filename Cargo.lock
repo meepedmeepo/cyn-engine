@@ -633,6 +633,7 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "wgpu",
+ "winit",
 ]
 
 [[package]]
@@ -827,6 +828,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "env_logger",
+ "graphics",
  "thiserror 2.0.12",
  "wgpu",
  "winit",

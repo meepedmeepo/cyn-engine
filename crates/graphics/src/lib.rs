@@ -19,13 +19,15 @@ mod context;
 mod data_pipeline;
 mod geometry;
 mod pipeline;
-mod renderer;
 mod spritesheet;
 mod structs;
 mod texture;
 
+pub mod renderer;
 pub mod utils;
+pub use context::WgpuContext;
 pub use geometry::*;
+pub use renderer::*;
 pub use structs::*;
 
 use crate::{
