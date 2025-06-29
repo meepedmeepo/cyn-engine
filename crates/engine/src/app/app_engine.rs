@@ -14,4 +14,6 @@ pub struct DisplayDimensions(pub u32, pub u32);
 
 pub trait AppEngine<GraphicState> {
     fn tick(&mut self, graphics_context: &GraphicState);
+
+    fn init(&mut self);
 }

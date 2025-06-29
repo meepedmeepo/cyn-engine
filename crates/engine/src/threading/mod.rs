@@ -1,11 +1,19 @@
-use std::sync::{
-    Arc,
-    mpsc::{Receiver, Sender},
+use std::{
+    sync::{
+        Arc,
+        mpsc::{Receiver, Sender},
+    },
+    thread::JoinHandle,
 };
 
 use common::traits::Renderer;
 
-use crate::app::{AppEngine, GraphicState};
+use crate::{
+    app::{AppEngine, EngineError, GraphicState},
+    threading::engine_thread::engine_thread_main,
+};
+
+mod engine_thread;
 
 pub fn spawn_engine_thread<
     R: Renderer + Send + Sync + 'static,
@@ -13,7 +21,11 @@ pub fn spawn_engine_thread<
 >(
     app_engine: A,
     graphics_context: GraphicState<R>,
-) -> (Sender<EngineEvent>, Receiver<EngineEvent>) {
+) -> (
+    Result<JoinHandle<()>, EngineError>,
+    Sender<EngineEvent>,
+    Receiver<EngineEvent>,
+) {
     let (engine_tx, engine_rx) = std::sync::mpsc::channel::<EngineEvent>();
     let (app_tx, app_rx) = std::sync::mpsc::channel::<EngineEvent>();
 
@@ -25,17 +37,20 @@ pub fn spawn_engine_thread<
 
             let wgpu_context = graphics_context;
 
-            let mut engine = app_engine;
+            let engine = app_engine;
 
-            while let Ok(app_msg) = rx.recv() {
-                engine.tick(&wgpu_context);
-            }
+            engine_thread_main(tx, rx, engine, wgpu_context);
         });
 
-    (app_tx, engine_rx)
+    (
+        engine_handle.map_err(|e| EngineError::ThreadFailedToSpawn(e.to_string())),
+        app_tx,
+        engine_rx,
+    )
 }
 
 pub enum EngineEvent {
     Quit,
     Tick,
+    Init,
 }

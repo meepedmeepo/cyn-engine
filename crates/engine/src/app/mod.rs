@@ -4,6 +4,7 @@ mod app_engine;
 pub use app_engine::*;
 
 use common::traits::Renderer;
+use thiserror::Error;
 use winit::{
     application::ApplicationHandler,
     error::EventLoopError,
@@ -86,4 +87,10 @@ impl<R: Renderer> ApplicationHandler<()> for App<R> {
             _ => {}
         }
     }
+}
+
+#[derive(Debug, Error)]
+pub enum EngineError {
+    #[error("Engine Error: Thread failed to spawn: {}", .0)]
+    ThreadFailedToSpawn(String),
 }
