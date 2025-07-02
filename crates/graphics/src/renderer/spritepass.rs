@@ -1,21 +1,16 @@
 use bytemuck::{Pod, Zeroable};
 use cgmath::{Matrix4, Vector4};
 
-use crate::{camera::CameraResource, structs::TexVertex, traits::RenderPass, WgpuContext};
+use crate::{WgpuContext, camera::CameraResource, structs::TexVertex, traits::RenderPass};
 
 pub struct SpritePass {
     vertex_queue: Vec<TexVertex>,
     indices: Vec<u32>,
     instances: Vec<SpriteInstance>,
     instance_buffer: wgpu::Buffer,
-    render_pipeline_layout: wgpu::RenderPipeline,
 }
 impl SpritePass {
     pub fn new() -> Self {
-        SpritePass {
-
-        }
-
         todo!()
     }
 }
