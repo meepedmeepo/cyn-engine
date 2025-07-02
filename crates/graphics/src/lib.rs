@@ -24,6 +24,7 @@ mod structs;
 mod texture;
 
 pub mod renderer;
+pub mod traits;
 pub mod utils;
 pub use context::WgpuContext;
 pub use geometry::*;

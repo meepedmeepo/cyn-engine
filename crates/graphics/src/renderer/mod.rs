@@ -15,6 +15,7 @@ pub struct Renderer2D {
 
 impl Renderer for Renderer2D {
     fn render(&self, device: &wgpu::Device, surface: &wgpu::Surface) {
+        //self.sprite_pass.ren
         todo!()
     }
 }

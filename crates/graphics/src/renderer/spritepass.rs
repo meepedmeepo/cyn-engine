@@ -1,25 +1,40 @@
 use bytemuck::{Pod, Zeroable};
 use cgmath::{Matrix4, Vector4};
 
-use crate::structs::TexVertex;
+use crate::{camera::CameraResource, structs::TexVertex, traits::RenderPass, WgpuContext};
 
 pub struct SpritePass {
     vertex_queue: Vec<TexVertex>,
     indices: Vec<u32>,
-    instances: Vec<crate::Instance>,
+    instances: Vec<SpriteInstance>,
     instance_buffer: wgpu::Buffer,
-    render_pipeline_layout: wgpu::PipelineLayout,
+    render_pipeline_layout: wgpu::RenderPipeline,
+}
+impl SpritePass {
+    pub fn new() -> Self {
+        SpritePass {
+
+        }
+
+        todo!()
+    }
+}
+
+impl RenderPass for SpritePass {
+    fn run_render_pass(&self, ctx: &WgpuContext, camera: &CameraResource) {
+        todo!()
+    }
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Pod, Zeroable)]
 pub struct SpriteInstance {
     pub position: [[f32; 4]; 4],
-    pub sprite_clip: [f32; 4],
+    pub sprite_clip: SpriteClip,
 }
 
 impl SpriteInstance {
-    pub fn new(pos_vec: cgmath::Vector3<f32>, sprite_clip: [f32; 4]) -> Self {
+    pub fn new(pos_vec: cgmath::Vector3<f32>, sprite_clip: SpriteClip) -> Self {
         SpriteInstance {
             position: Matrix4::from_translation(pos_vec).into(),
             sprite_clip,
@@ -34,35 +49,40 @@ impl SpriteInstance {
                 //Matrix4<f32>
                 wgpu::VertexAttribute {
                     offset: 0,
-                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
                     shader_location: 5,
                     format: wgpu::VertexFormat::Float32x4,
                 },
                 wgpu::VertexAttribute {
                     offset: std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
-                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
                     shader_location: 6,
                     format: wgpu::VertexFormat::Float32x4,
                 },
                 wgpu::VertexAttribute {
                     offset: std::mem::size_of::<[f32; 8]>() as wgpu::BufferAddress,
-                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
                     shader_location: 7,
                     format: wgpu::VertexFormat::Float32x4,
                 },
                 wgpu::VertexAttribute {
                     offset: std::mem::size_of::<[f32; 12]>() as wgpu::BufferAddress,
-                    //Using offset of 5 leaves room for Vertex to use location 2, 3, and 4 in future.
                     shader_location: 8,
                     format: wgpu::VertexFormat::Float32x4,
                 },
-                //Vector4<f32> - Sprite clip
+                //Vector4<u32> - Sprite clip
                 wgpu::VertexAttribute {
-                    offset: std::mem::size_of::<[f32; 16]>() as wgpu::BufferAddress,
+                    offset: std::mem::size_of::<[u32; 16]>() as wgpu::BufferAddress,
                     shader_location: 4,
-                    format: wgpu::VertexFormat::Float32x4,
+                    format: wgpu::VertexFormat::Uint32x4,
                 },
             ],
         }
     }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone, Pod, Zeroable)]
+pub struct SpriteClip {
+    pub row: u32,
+    pub col: u32,
+    pub clip_width: u32,
+    pub clip_height: u32,
 }

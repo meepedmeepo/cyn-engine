@@ -212,6 +212,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "asset_storage"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "slotmap",
+]
+
+[[package]]
 name = "async-executor"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
